@@ -66,6 +66,18 @@ public class GameState : State
         orders.Add("EXIT_GAME");
         keyBindings.Add(BSKeyCode.Escape, orders);
 
+        orders = new List<string>();
+        orders.Add("NEXT_MOVEMENT");
+        keyBindings.Add(BSKeyCode.UpArrow, orders);
+
+        orders = new List<string>();
+        orders.Add("TESTKEY1");
+        keyBindings.Add(BSKeyCode.DownArrow, orders);
+
+        orders = new List<string>();
+        orders.Add("CLICK");
+        keyBindings.Add(BSKeyCode.Mouse0, orders);
+
         //TO DO MouseCfg config
 
         MouseCfg cfg = new MouseCfg(false, false, 10.0f);

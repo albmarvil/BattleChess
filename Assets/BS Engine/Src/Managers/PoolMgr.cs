@@ -153,7 +153,7 @@ namespace BSEngine
 
         /// <summary>
         /// This method will create an instance of the given prefab. If the prefab is in cache the GameObject will be activated.
-        /// If not a new instance will be crated and cached at the same time for next uses.
+        /// 
         /// 
         /// We will use a namespace rule to identify an instance of an object and it's original prefab. Every instance will have the original prefab name
         /// followed by "@" and an ID number.
@@ -187,10 +187,10 @@ namespace BSEngine
                 instance = GameObject.Instantiate(prefab, position, rotation) as GameObject;
                 instance.name = prefab.name + "@" + NextID;
 
-                List<GameObject> list = new List<GameObject>();
-                list.Add(instance);
+                //List<GameObject> list = new List<GameObject>();
+                //list.Add(instance);
 
-                m_cache.Add(prefab.name, list);
+                //m_cache.Add(prefab.name, list);
             }
 
             instance.GetComponent<Transform>().SetParent(SceneMgr.Singleton.CurrentRoot.GetComponent<Transform>());
@@ -200,7 +200,7 @@ namespace BSEngine
 
         /// <summary>
         /// This method will create an instance of the given prefab. If the prefab is in cache the GameObject will be activated.
-        /// If not a new instance will be crated and cached at the same time for next uses.
+        /// 
         /// 
         /// We will use a namespace rule to identify an instance of an object and it's original prefab. Every instance will have the original prefab name
         /// followed by "@" and an ID number.
