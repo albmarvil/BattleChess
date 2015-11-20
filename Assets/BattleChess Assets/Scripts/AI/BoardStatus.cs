@@ -35,9 +35,11 @@ public enum ChessPiece
     BLACK_BISHOP,
     WHITE_PAWN,
     BLACK_PAWN,
-    WHITE = WHITE_KING | WHITE_BISHOP | WHITE_KNIGHT | WHITE_PAWN | WHITE_QUEEN | WHITE_ROOK,
-    BLACK = BLACK_BISHOP |BLACK_KING | BLACK_KNIGHT | BLACK_PAWN | BLACK_QUEEN | BLACK_ROOK
+    WHITE, //= WHITE_KING | WHITE_BISHOP | WHITE_KNIGHT | WHITE_PAWN | WHITE_QUEEN | WHITE_ROOK,
+    BLACK //= BLACK_BISHOP | BLACK_KING | BLACK_KNIGHT | BLACK_PAWN | BLACK_QUEEN | BLACK_ROOK
 }
+
+
 
 
 public class BoardStatus {
@@ -230,7 +232,7 @@ public class BoardStatus {
             ChessPiece destinationPiece = m_status[destination];
             if (destinationPiece != ChessPiece.NONE)
             {
-                ChessPiece destinationPieceColor = (ChessPiece.WHITE & destinationPiece) == 0 ? ChessPiece.BLACK : ChessPiece.WHITE;
+                ChessPiece destinationPieceColor = getPieceColor(destinationPiece);
                 if (destinationPieceColor == ChessPiece.WHITE)
                 {
                     m_whitePiecesPosition.Remove(destination);
@@ -244,7 +246,7 @@ public class BoardStatus {
             m_status[destination] = piece;
             m_status[origin] = ChessPiece.NONE;
 
-            ChessPiece pieceColor = (ChessPiece.WHITE & piece) == 0 ? ChessPiece.BLACK : ChessPiece.WHITE;
+            ChessPiece pieceColor = getPieceColor(piece);
 
             if (pieceColor == ChessPiece.WHITE)
             {
@@ -271,6 +273,8 @@ public class BoardStatus {
 
         List<string> piecesToMove = color == ChessPiece.WHITE ? WhitePieces : BlackPieces;
 
+        //bool check = Check(color);
+
         foreach (string tile in piecesToMove)
         {
             ChessPiece piece = m_status[tile];
@@ -279,7 +283,14 @@ public class BoardStatus {
             {
                 BoardStatus newBoard = new BoardStatus(this);
                 newBoard.movePieceToDestination(tile, movement);
-                result.Add(newBoard);
+                if (/*!check || check &&*/ !newBoard.Check(color))
+                {
+                    result.Add(newBoard);
+                }
+                else
+                {
+                    Debug.LogWarning("Descartado por Check");
+                }
             }
         }
 
@@ -374,30 +385,101 @@ public class BoardStatus {
     {
         List<string> result = new List<string>();
 
-        for (int offsetH = -1; offsetH <= 1; ++offsetH)
-        {
-            int horPos = i + offsetH;
-            if (horPos >= 0 && horPos <= 7)
+        //up-left
+        int row = i + 1;
+        int column = j - 1;
+        if(row >= 0 && row < 8 && column >= 0 && column < 8){
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
             {
-                for (int offsetV = -1; offsetV <= 1; ++offsetV)
-                {
-                    if (offsetH != 0 && offsetV != 0)
-                    {
-                        int verPos = j + offsetV;
-
-                        if (verPos >= 0 && verPos <= 7)
-                        {
-                            string code = BoardManager.statusIndexesToCode(horPos, verPos);
-
-                            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
-                            {
-                                result.Add(code);
-                            }
-                        }
-                    }
-                }
+                result.Add(code);
             }
         }
+
+        //up
+        row = i + 1;
+        column = j;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //up-right
+        row = i + 1;
+        column = j + 1;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //left
+        row = i;
+        column = j - 1;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //right
+        row = i;
+        column = j + 1;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //down-left
+        row = i - 1;
+        column = j - 1;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //down
+        row = i - 1;
+        column = j;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+
+        //down-right
+        row = i - 1;
+        column = j + 1;
+        if (row >= 0 && row < 8 && column >= 0 && column < 8)
+        {
+            string code = BoardManager.statusIndexesToCode(row, column);
+            if (getPieceColor(m_status[code]) != color)
+            {
+                result.Add(code);
+            }
+        }
+        
 
         return result;
     }
@@ -445,7 +527,7 @@ public class BoardStatus {
                 code = BoardManager.statusIndexesToCode(h, v);
                 cont = m_status[code] == ChessPiece.NONE;
 
-                if (cont || (m_status[code]) == 0 )
+                if (cont || getPieceColor(m_status[code]) != color )
                 {
                     result.Add(code);
                 } 
@@ -472,7 +554,7 @@ public class BoardStatus {
                 code = BoardManager.statusIndexesToCode(h, v);
                 cont = m_status[code] == ChessPiece.NONE;
 
-                if (cont || (m_status[code]) == 0)
+                if (cont || getPieceColor(m_status[code]) != color)
                 {
                     result.Add(code);
                 } 
@@ -498,7 +580,7 @@ public class BoardStatus {
                 code = BoardManager.statusIndexesToCode(h, v);
                 cont = m_status[code] == ChessPiece.NONE;
 
-                if (cont || (m_status[code]) == 0)
+                if (cont || getPieceColor(m_status[code]) != color)
                 {
                     result.Add(code);
                 } 
@@ -524,7 +606,7 @@ public class BoardStatus {
                 code = BoardManager.statusIndexesToCode(h, v);
                 cont = m_status[code] == ChessPiece.NONE;
 
-                if (cont || (m_status[code]) == 0)
+                if (cont || getPieceColor(m_status[code]) != color)
                 {
                     result.Add(code);
                 } 
@@ -556,7 +638,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if(m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -568,7 +650,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -580,7 +662,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -592,7 +674,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -604,7 +686,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -616,7 +698,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -628,7 +710,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -640,7 +722,7 @@ public class BoardStatus {
         if (h >= 0 && h < 8 && v >= 0 && v < 8)
         {
             string code = BoardManager.statusIndexesToCode(h, v);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
             }
@@ -664,9 +746,13 @@ public class BoardStatus {
         for (int up = i + 1; up < 8; ++up)
         {
             string code = BoardManager.statusIndexesToCode(up, j);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
+                if (m_status[code] != ChessPiece.NONE)
+                {
+                    break;
+                }
             }
             else
             {
@@ -678,9 +764,13 @@ public class BoardStatus {
         for (int down = i - 1; down >= 0; --down)
         {
             string code = BoardManager.statusIndexesToCode(down, j);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
+                if (m_status[code] != ChessPiece.NONE)
+                {
+                    break;
+                }
             }
             else
             {
@@ -692,9 +782,13 @@ public class BoardStatus {
         for (int right = j + 1; right < 8; ++right)
         {
             string code = BoardManager.statusIndexesToCode(i, right);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
+                if (m_status[code] != ChessPiece.NONE)
+                {
+                    break;
+                }
             }
             else
             {
@@ -706,9 +800,13 @@ public class BoardStatus {
         for (int left = j - 1; left >= 0; --left)
         {
             string code = BoardManager.statusIndexesToCode(i, left);
-            if (m_status[code] == ChessPiece.NONE || (m_status[code] & color) == 0)
+            if (getPieceColor(m_status[code]) != color)
             {
                 result.Add(code);
+                if (m_status[code] != ChessPiece.NONE)
+                {
+                    break;
+                }
             }
             else
             {
@@ -749,7 +847,7 @@ public class BoardStatus {
                 if (h >= 0 && h < 8 && v >= 0 && v < 8)
                 {
                     string code = BoardManager.statusIndexesToCode(h, v);
-                    if (m_status[code] != ChessPiece.NONE && (m_status[code] & color) == 0)
+                    if (m_status[code] != ChessPiece.NONE && getPieceColor(m_status[code]) != color)
                     {
                         result.Add(code);
                     }
@@ -759,7 +857,7 @@ public class BoardStatus {
                 if (h >= 0 && h < 8 && v >= 0 && v < 8)
                 {
                     string code = BoardManager.statusIndexesToCode(h, v);
-                    if (m_status[code] != ChessPiece.NONE && (m_status[code] & color) == 0)
+                    if (m_status[code] != ChessPiece.NONE && getPieceColor(m_status[code]) != color)
                     {
                         result.Add(code);
                     }
@@ -772,7 +870,7 @@ public class BoardStatus {
                     if (h >= 0 && h < 8 && v >= 0 && v < 8)
                     {
                         string code = BoardManager.statusIndexesToCode(h, v);
-                        if ((m_status[code] & color) == 0)
+                        if (m_status[code] == ChessPiece.NONE)
                         {
                             result.Add(code);
                         }
@@ -799,7 +897,7 @@ public class BoardStatus {
                 if (h >= 0 && h < 8 && v >= 0 && v < 8)
                 {
                     string code = BoardManager.statusIndexesToCode(h, v);
-                    if (m_status[code] != ChessPiece.NONE && (m_status[code] & color) == 0)
+                    if (m_status[code] != ChessPiece.NONE && getPieceColor(m_status[code]) != color)
                     {
                         result.Add(code);
                     }
@@ -809,7 +907,7 @@ public class BoardStatus {
                 if (h >= 0 && h < 8 && v >= 0 && v < 8)
                 {
                     string code = BoardManager.statusIndexesToCode(h, v);
-                    if (m_status[code] != ChessPiece.NONE && (m_status[code] & color) == 0)
+                    if (m_status[code] != ChessPiece.NONE && getPieceColor(m_status[code]) != color)
                     {
                         result.Add(code);
                     }
@@ -822,7 +920,7 @@ public class BoardStatus {
                     if (h >= 0 && h < 8 && v >= 0 && v < 8)
                     {
                         string code = BoardManager.statusIndexesToCode(h, v);
-                        if ((m_status[code] & color) == 0)
+                        if (getPieceColor(m_status[code]) != color)
                         {
                             result.Add(code);
                         }
@@ -871,7 +969,7 @@ public class BoardStatus {
 
         foreach (string rivalPiece in rivalPieces)
         {
-            rivalMovements.AddRange(getAllPieceMovements(m_status[rivalPiece], rivalPiece));
+            rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
 
             res = res || rivalMovements.Contains(KingPos);
             if (res)
@@ -881,6 +979,36 @@ public class BoardStatus {
         }
 
         return res;
+    }
+
+    public bool isWhitePiece(ChessPiece piece)
+    {
+        return piece == ChessPiece.WHITE_BISHOP ||
+               piece == ChessPiece.WHITE_KING ||
+               piece == ChessPiece.WHITE_KNIGHT ||
+               piece == ChessPiece.WHITE_PAWN ||
+               piece == ChessPiece.WHITE_QUEEN ||
+               piece == ChessPiece.WHITE_ROOK;
+    }
+
+    public bool isBlackPiece(ChessPiece piece)
+    {
+        return piece == ChessPiece.BLACK_BISHOP ||
+               piece == ChessPiece.BLACK_KING ||
+               piece == ChessPiece.BLACK_KNIGHT ||
+               piece == ChessPiece.BLACK_PAWN ||
+               piece == ChessPiece.BLACK_QUEEN ||
+               piece == ChessPiece.BLACK_ROOK;
+    }
+
+    public ChessPiece getPieceColor(ChessPiece piece)
+    {
+        if (isWhitePiece(piece))
+            return ChessPiece.WHITE;
+        else if (isBlackPiece(piece))
+            return ChessPiece.BLACK;
+        else
+            return ChessPiece.NONE;
     }
 
     public bool CheckMate(ChessPiece color)
