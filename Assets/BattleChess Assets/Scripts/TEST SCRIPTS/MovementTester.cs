@@ -31,7 +31,7 @@ public class MovementTester : MonoBehaviour {
                 {
                     ChessPiece piece = tag.Piece;
 
-                    List<string> movements = BoardManager.Singleton.CurrentStatus.getAllPieceMovements(piece, tag.TileCode);
+                    HashSet<string> movements = BoardManager.Singleton.CurrentStatus.getAllPieceMovements(piece, tag.TileCode);
 
                     foreach (string movement in movements)
                     {

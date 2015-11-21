@@ -62,26 +62,85 @@ public class BoardManager : MonoBehaviour {
 
 
     #region Public params
-    public GameObject m_WhiteKing = null;
-    public GameObject m_WhiteQueen = null;
-    public GameObject m_WhiteKnight = null;
-    public GameObject m_WhiteBishop = null;
-    public GameObject m_WhiteRook = null;
-    public GameObject m_WhitePawn = null;
+    
 
-
-    public GameObject m_BlackKing = null;
-    public GameObject m_BlackQueen = null;
-    public GameObject m_BlackKnight = null;
-    public GameObject m_BlackBishop = null;
-    public GameObject m_BlackRook = null;
-    public GameObject m_BlackPawn = null;
-
-    public Dictionary<string, GameObject> board = new Dictionary<string, GameObject>();
+    
 
     #endregion
 
     #region Private params
+
+    /// <summary>
+    /// Reference to the White King piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhiteKing = null;
+
+    /// <summary>
+    /// Reference to the White Queen piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhiteQueen = null;
+
+    /// <summary>
+    /// Reference to the White Knight piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhiteKnight = null;
+
+    /// <summary>
+    /// Reference to the White Bishop piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhiteBishop = null;
+
+    /// <summary>
+    /// Reference to the White Rook piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhiteRook = null;
+
+    /// <summary>
+    /// Reference to the White Pawn piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_WhitePawn = null;
+
+    /// <summary>
+    /// Reference to the Black King piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackKing = null;
+
+    /// <summary>
+    /// Reference to the Black Queen piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackQueen = null;
+
+    /// <summary>
+    /// Reference to the Black Knight piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackKnight = null;
+
+    /// <summary>
+    /// Reference to the Black Bishop piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackBishop = null;
+
+    /// <summary>
+    /// Reference to the Black Rook piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackRook = null;
+
+    /// <summary>
+    /// Reference to the Black Pawn piece prefab
+    /// </summary>
+    [SerializeField]
+    private GameObject m_BlackPawn = null;
 
     /// <summary>
     /// GameObject reference to the ChessBoard
@@ -93,6 +152,11 @@ public class BoardManager : MonoBehaviour {
     /// Waypoints of the ChessBoard
     /// </summary>
     private Dictionary<string, GameObject> m_boardWaypoints = new Dictionary<string, GameObject>();
+
+    /// <summary>
+    /// Pieces located in the board
+    /// </summary>
+    private Dictionary<string, GameObject> m_PiecesInBoard = new Dictionary<string, GameObject>();
 
     /// <summary>
     /// Current logical board status
@@ -246,9 +310,20 @@ public class BoardManager : MonoBehaviour {
         }
     }
 
+    #endregion
 
 
-    public void createPiece(ChessPiece piece, string tile)
+
+    #region HACKS
+
+    // This region contains all the hack methods used for testing and graphic representation of the logic status board
+    
+    /// <summary>
+    /// Method used to create a piece from its corresponding prefab in the board
+    /// </summary>
+    /// <param name="piece">Piece to create</param>
+    /// <param name="tile">Tile Code where create the piece</param>
+    private void createPiece(ChessPiece piece, string tile)
     {
         Vector3 waypointPos = m_boardWaypoints[tile].transform.position;
         waypointPos.y = waypointPos.y + 0.65f;
@@ -258,7 +333,7 @@ public class BoardManager : MonoBehaviour {
         GameObject inst = null;
         switch (piece)
         {
-                
+
             case ChessPiece.WHITE_BISHOP:
                 inst = PoolMgr.Singleton.Instatiate(m_WhiteBishop, waypointPos, rotation);
                 break;
@@ -300,37 +375,47 @@ public class BoardManager : MonoBehaviour {
         }
 
         inst.GetComponent<PieceTag>().TileCode = tile;
-        board.Add(tile, inst);
+        m_PiecesInBoard.Add(tile, inst);
     }
 
-    
 
-    public void removePiece(string tile)
+    /// <summary>
+    /// Method used to remove a piece GameObject from the board
+    /// </summary>
+    /// <param name="tile">Tile Code to clear</param>
+    private void removePiece(string tile)
     {
 
-        PoolMgr.Singleton.Destroy(board[tile]);
-        board.Remove(tile);
+        PoolMgr.Singleton.Destroy(m_PiecesInBoard[tile]);
+        m_PiecesInBoard.Remove(tile);
     }
 
+    /// <summary>
+    /// Method used to Create all the corresponding pieces of the current logic status on the board
+    /// </summary>
     public void ShowBoard()
     {
         foreach (string tile in m_currentStatus.Status.Keys)
         {
-            if(m_currentStatus.Status[tile] != ChessPiece.NONE)
+            if (m_currentStatus.Status[tile] != ChessPiece.NONE)
                 createPiece(m_currentStatus.Status[tile], tile);
         }
     }
 
+    /// <summary>
+    /// Method used to remove all the piece's gameobject from the board
+    /// </summary>
     public void ClearBoard()
     {
-        foreach (string key in board.Keys)
+        foreach (string key in m_PiecesInBoard.Keys)
         {
-            PoolMgr.Singleton.Destroy(board[key]);
+            PoolMgr.Singleton.Destroy(m_PiecesInBoard[key]);
         }
-        board.Clear();
+        m_PiecesInBoard.Clear();
     }
 
     #endregion
+
 
     #region Private methods
 
@@ -338,6 +423,9 @@ public class BoardManager : MonoBehaviour {
 
     #region Monobehavior calls
 
+    /// <summary>
+    /// At the begining a status is created (setting the starting config by default)
+    /// </summary>
     private void OnEnable()
     {
         m_currentStatus = new BoardStatus();

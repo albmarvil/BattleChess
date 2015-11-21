@@ -55,8 +55,14 @@ public class BoardStatus {
     /// </summary>
     private Dictionary<string, ChessPiece> m_status = new Dictionary<string, ChessPiece>();
 
+    /// <summary>
+    /// List of the tile codes (positions on the board) of all white pieces
+    /// </summary>
     private List<string> m_whitePiecesPosition = new List<string>();
 
+    /// <summary>
+    /// List of the tile codes(positions on the board) of all black pieces
+    /// </summary>
     private List<string> m_blackPiecesPosition = new List<string>();
 
     #endregion
@@ -99,7 +105,7 @@ public class BoardStatus {
     }
 
     /// <summary>
-    /// Used to reset the status to the pieces's starting postiion
+    /// Used to reset the status to the pieces's starting position
     /// </summary>
     public void setToStartingStatus()
     {
@@ -170,22 +176,25 @@ public class BoardStatus {
         #endregion
     }
 
+    /// <summary>
+    /// Property to acces to the Black Pieces positions of the board
+    /// </summary>
     public List<string> BlackPieces
     {
-        get
-        {
-            return m_blackPiecesPosition;
-        }
+        get { return m_blackPiecesPosition; }
     }
 
+    /// <summary>
+    /// Property to acces to the White Pieces positions of the board
+    /// </summary>
     public List<string> WhitePieces
     {
-        get
-        {
-            return m_whitePiecesPosition;
-        }
+        get { return m_whitePiecesPosition; }
     }
 
+    /// <summary>
+    /// Property to get the White King Position on the board
+    /// </summary>
     public string WhiteKing
     {
         get
@@ -202,6 +211,9 @@ public class BoardStatus {
         }
     }
 
+    /// <summary>
+    /// Property to get the Black King position on the board
+    /// </summary>
     public string BlackKing
     {
         get
@@ -266,24 +278,22 @@ public class BoardStatus {
     /// given a color to move
     /// </summary>
     /// <param name="color">Color to move</param>
-    /// <returns></returns>
     public List<BoardStatus> getAllBoardMovements(ChessPiece color)
     {
         List<BoardStatus> result = new List<BoardStatus>();
 
         List<string> piecesToMove = color == ChessPiece.WHITE ? WhitePieces : BlackPieces;
 
-        //bool check = Check(color);
 
         foreach (string tile in piecesToMove)
         {
             ChessPiece piece = m_status[tile];
-            List<string> movements = getAllPieceMovements(piece, tile);
+            HashSet<string> movements = getAllPieceMovements(piece, tile);
             foreach (string movement in movements)
             {
                 BoardStatus newBoard = new BoardStatus(this);
                 newBoard.movePieceToDestination(tile, movement);
-                if (/*!check || check &&*/ !newBoard.Check(color))
+                if (!newBoard.Check(color))
                 {
                     result.Add(newBoard);
                 }
@@ -306,9 +316,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece to move</param>
     /// <param name="j">Column of the piece to move</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getAllPieceMovements(ChessPiece piece, int i, int j)
+    public HashSet<string> getAllPieceMovements(ChessPiece piece, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
         if (WhiteKing != "-" && BlackKing != "-")
         {
@@ -366,7 +376,7 @@ public class BoardStatus {
     /// <param name="piece">Piece to move</param>
     /// <param name="tileCode">Tile code of the piece to move</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getAllPieceMovements(ChessPiece piece, string tileCode)
+    public HashSet<string> getAllPieceMovements(ChessPiece piece, string tileCode)
     {
         int i = 0;
         int j = 0;
@@ -381,9 +391,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getKingMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getKingMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
         //up-left
         int row = i + 1;
@@ -491,13 +501,13 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getQueenMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getQueenMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
-        result.AddRange(getKingMovements(color, i, j));
-        result.AddRange(getRookMovements(color, i, j));
-        result.AddRange(getBishopMovements(color, i, j));
+        result.UnionWith(getKingMovements(color, i, j));
+        result.UnionWith(getRookMovements(color, i, j));
+        result.UnionWith(getBishopMovements(color, i, j));
 
         return result;
     }
@@ -509,9 +519,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getBishopMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getBishopMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
         //up-right
         int h = i;
@@ -628,9 +638,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getKnightMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getKnightMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
         //up-left
         int h = i + 2;
@@ -738,9 +748,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getRookMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getRookMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
 
         ///up
         for (int up = i + 1; up < 8; ++up)
@@ -824,9 +834,9 @@ public class BoardStatus {
     /// <param name="i">Row of the piece</param>
     /// <param name="j">Column of the piece</param>
     /// <returns>List of tile codes where the piece can move</returns>
-    public List<string> getPawnMovements(ChessPiece color, int i, int j)
+    public HashSet<string> getPawnMovements(ChessPiece color, int i, int j)
     {
-        List<string> result = new List<string>();
+        HashSet<string> result = new HashSet<string>();
         
         switch (color)
         {
@@ -933,19 +943,73 @@ public class BoardStatus {
         return result;
     }
 
+    #endregion
+
+    
+
+    /// <summary>
+    /// Predicate. True if the given piece is a White piece
+    /// </summary>
+    /// <param name="piece">Piece to check</param>
+    public bool isWhitePiece(ChessPiece piece)
+    {
+        return piece == ChessPiece.WHITE_BISHOP ||
+               piece == ChessPiece.WHITE_KING ||
+               piece == ChessPiece.WHITE_KNIGHT ||
+               piece == ChessPiece.WHITE_PAWN ||
+               piece == ChessPiece.WHITE_QUEEN ||
+               piece == ChessPiece.WHITE_ROOK;
+    }
+
+    /// <summary>
+    /// Predicate. True if the given piece is a Black piece
+    /// </summary>
+    /// <param name="piece">Piece to check</param>
+    public bool isBlackPiece(ChessPiece piece)
+    {
+        return piece == ChessPiece.BLACK_BISHOP ||
+               piece == ChessPiece.BLACK_KING ||
+               piece == ChessPiece.BLACK_KNIGHT ||
+               piece == ChessPiece.BLACK_PAWN ||
+               piece == ChessPiece.BLACK_QUEEN ||
+               piece == ChessPiece.BLACK_ROOK;
+    }
+
+    /// <summary>
+    /// Method used to get the piece color
+    /// </summary>
+    /// <param name="piece">Piece to check</param>
+    /// <returns>Color of the given piece( WHITE || BLACK || NONE)</returns>
+    public ChessPiece getPieceColor(ChessPiece piece)
+    {
+        if (isWhitePiece(piece))
+            return ChessPiece.WHITE;
+        else if (isBlackPiece(piece))
+            return ChessPiece.BLACK;
+        else
+            return ChessPiece.NONE;
+    }
+
+    /// <summary>
+    /// Check predicate. Used to check if the board is in "Check" status
+    /// 
+    /// This method also returns the list with the position of the checking pieces to the given color
+    /// </summary>
+    /// <param name="color">Color to check</param>
+    /// <param name="checking">(REF) list of the cheking pieces</param>
     public bool Check(ChessPiece color, ref List<string> checking)
     {
         List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
 
         string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
 
-        List<string> rivalMovements = new List<string>();
+        HashSet<string> rivalMovements = new HashSet<string>();
 
         bool res = false;
 
         foreach (string rivalPiece in rivalPieces)
         {
-            rivalMovements.AddRange(getAllPieceMovements(m_status[rivalPiece], rivalPiece));
+            rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
 
             res = res || rivalMovements.Contains(KingPos);
             if (res)
@@ -957,13 +1021,17 @@ public class BoardStatus {
         return res;
     }
 
+    /// <summary>
+    /// Check predicate. Used to check if the board is in "Check" status
+    /// </summary>
+    /// <param name="color">Color to check</param>
     public bool Check(ChessPiece color)
     {
         List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
 
         string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
 
-        List<string> rivalMovements = new List<string>();
+        HashSet<string> rivalMovements = new HashSet<string>();
 
         bool res = false;
 
@@ -981,36 +1049,14 @@ public class BoardStatus {
         return res;
     }
 
-    public bool isWhitePiece(ChessPiece piece)
-    {
-        return piece == ChessPiece.WHITE_BISHOP ||
-               piece == ChessPiece.WHITE_KING ||
-               piece == ChessPiece.WHITE_KNIGHT ||
-               piece == ChessPiece.WHITE_PAWN ||
-               piece == ChessPiece.WHITE_QUEEN ||
-               piece == ChessPiece.WHITE_ROOK;
-    }
-
-    public bool isBlackPiece(ChessPiece piece)
-    {
-        return piece == ChessPiece.BLACK_BISHOP ||
-               piece == ChessPiece.BLACK_KING ||
-               piece == ChessPiece.BLACK_KNIGHT ||
-               piece == ChessPiece.BLACK_PAWN ||
-               piece == ChessPiece.BLACK_QUEEN ||
-               piece == ChessPiece.BLACK_ROOK;
-    }
-
-    public ChessPiece getPieceColor(ChessPiece piece)
-    {
-        if (isWhitePiece(piece))
-            return ChessPiece.WHITE;
-        else if (isBlackPiece(piece))
-            return ChessPiece.BLACK;
-        else
-            return ChessPiece.NONE;
-    }
-
+    /// <summary>
+    /// Predicate used to check if the board is in a "CheckMate" status.
+    /// 
+    /// This status is obtained when the board is in check and none of the possible
+    /// movements from this board solves this situation.
+    /// </summary>
+    /// <param name="color">Color to check the status</param>
+    /// <returns>True if the board is in CHECK MATE</returns>
     public bool CheckMate(ChessPiece color)
     {
         bool check = Check(color);
@@ -1023,15 +1069,29 @@ public class BoardStatus {
         {
             mate = mate || st.Check(color);
         }
-        
-        return check&&mate;
+
+        return check && mate;
     }
 
+    /// <summary>
+    /// Predicate used to check if the board is in "Draw" status
+    /// 
+    /// Now the condition used is "if both oponents have only 1 piece remaining (kings)"
+    /// </summary>
+    /// <returns>True if there is a DRAW</returns>
     public bool Draw()
     {
         return m_blackPiecesPosition.Count == 1 && m_whitePiecesPosition.Count == 1;
     }
 
+    /// <summary>
+    /// Predicate used to check if "Castling" it's possible for one color.
+    /// 
+    /// It also returns the position of the rook available to castling with the king
+    /// </summary>
+    /// <param name="color">Color to check the castling</param>
+    /// <param name="code">(OUT) Tile code position of the rook for castling</param>
+    /// <returns>True if a castling is possible</returns>
     public bool Castling(ChessPiece color, out string code)
     {
         code = "-";
@@ -1113,16 +1173,6 @@ public class BoardStatus {
 
         return false;
     }
-
-    #endregion
-
-    #endregion
-
-    #region Private methods
-
-    #endregion
-
-    #region Monobehavior calls
 
     #endregion
 
