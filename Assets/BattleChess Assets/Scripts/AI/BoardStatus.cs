@@ -39,7 +39,57 @@ public enum ChessPiece
     BLACK //= BLACK_BISHOP | BLACK_KING | BLACK_KNIGHT | BLACK_PAWN | BLACK_QUEEN | BLACK_ROOK
 }
 
+/// <summary>
+/// Definition of a chess movement
+/// </summary>
+public struct Movement
+{
+    /// <summary>
+    /// Origin position of the piece when moved
+    /// </summary>
+    private string m_origin;
 
+    /// <summary>
+    /// Destination position of the piece when moved
+    /// </summary>
+    private string m_destination;
+
+    /// <summary>
+    /// Piece moved
+    /// </summary>
+    private ChessPiece m_pieceMoved;
+
+    /// <summary>
+    /// Public consturctor
+    /// </summary>
+    /// <param name="origin">Origin position</param>
+    /// <param name="destination">Destination position</param>
+    /// <param name="pieceMoved">Piece moved</param>
+    public Movement(string origin, string destination, ChessPiece pieceMoved)
+    {
+        m_origin = origin;
+        m_destination = destination;
+        m_pieceMoved = pieceMoved;
+    }
+
+    public string Origin
+    {
+        get { return m_origin;  }
+        set { m_origin = value; }
+    }
+
+    public string Destination
+    {
+        get { return m_destination; }
+        set { m_destination = value; }
+    }
+
+    public ChessPiece PieceMoved
+    {
+        get { return m_pieceMoved; }
+        set { m_pieceMoved = value; }
+    }
+}
 
 
 public class BoardStatus {
@@ -297,10 +347,10 @@ public class BoardStatus {
                 {
                     result.Add(newBoard);
                 }
-                else
-                {
-                    Debug.LogWarning("Descartado por Check");
-                }
+                //else
+                //{
+                //    Debug.LogWarning("Descartado por Check");
+                //}
             }
         }
 
@@ -945,7 +995,46 @@ public class BoardStatus {
 
     #endregion
 
-    
+    /// <summary>
+    /// Returns the movement difference between to chess boards.
+    /// 
+    /// ***IMPORTANT*** Only works with a board that has 1 movement of difference. 
+    /// Other boards will return bad results
+    /// </summary>
+    /// <param name="color">Color of the pieces that had been moved</param>
+    /// <param name="destinationBoard">Destination Board to check</param>
+    /// <returns>KeyValuePair with this structure: (Piece, (origin, destination))</returns>
+    public Movement getMovementDifference(ChessPiece color, BoardStatus destinationBoard)
+    {
+        List<string> colorPieces = color == ChessPiece.WHITE ? WhitePieces : BlackPieces;
+        List<string> otherColorPieces = color == ChessPiece.WHITE ? destinationBoard.WhitePieces : destinationBoard.BlackPieces;
+
+        string origin = "";
+        string destination = "";
+
+        foreach (string myPiece in colorPieces)
+        {
+            if (!otherColorPieces.Contains(myPiece))
+            {
+                origin = myPiece;
+                break;
+            }
+        }
+
+        foreach (string otherPiece in otherColorPieces)
+        {
+            if (!colorPieces.Contains(otherPiece))
+            {
+                destination = otherPiece;
+                break;
+            }
+        }
+
+        ChessPiece pieceMoved = m_status[origin];
+
+
+        return new Movement(origin, destination, pieceMoved);
+    }
 
     /// <summary>
     /// Predicate. True if the given piece is a White piece

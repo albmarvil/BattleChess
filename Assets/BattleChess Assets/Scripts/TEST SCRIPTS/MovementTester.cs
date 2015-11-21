@@ -26,7 +26,7 @@ public class MovementTester : MonoBehaviour {
 
             if (Physics.Raycast(ray, out hit))
             {
-                PieceTag tag = hit.collider.gameObject.GetComponent<PieceTag>();
+                PieceInfo tag = hit.collider.gameObject.GetComponent<PieceInfo>();
                 if (tag != null)
                 {
                     ChessPiece piece = tag.Piece;

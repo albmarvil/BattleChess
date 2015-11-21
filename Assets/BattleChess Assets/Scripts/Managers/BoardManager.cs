@@ -214,6 +214,24 @@ public class BoardManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Function used to start a match
+    /// </summary>
+    public void startMatch()
+    {
+        m_currentStatus = new BoardStatus();
+    }
+
+    /// <summary>
+    /// Method used to update the current status with the given movement
+    /// </summary>
+    /// <param name="movement">Movement data to update</param>
+    public void UpdateCurrentStatus(Movement movement)
+    {
+        CurrentStatus.movePieceToDestination(movement.Origin, movement.Destination);
+    }
+
+
+    /// <summary>
     /// Static method used to translate indexes on the chess board to
     /// the traditional code.
     /// 
@@ -374,7 +392,7 @@ public class BoardManager : MonoBehaviour {
                 break;
         }
 
-        inst.GetComponent<PieceTag>().TileCode = tile;
+        inst.GetComponent<PieceInfo>().TileCode = tile;
         m_PiecesInBoard.Add(tile, inst);
     }
 
@@ -426,10 +444,10 @@ public class BoardManager : MonoBehaviour {
     /// <summary>
     /// At the begining a status is created (setting the starting config by default)
     /// </summary>
-    private void OnEnable()
-    {
-        m_currentStatus = new BoardStatus();
-    }
+    //private void OnEnable()
+    //{
+    //    m_currentStatus = new BoardStatus();
+    //}
 
     /// <summary>
     /// Clear the board status

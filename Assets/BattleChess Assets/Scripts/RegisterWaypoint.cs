@@ -20,9 +20,9 @@ public class RegisterWaypoint : MonoBehaviour
 
     #region Monobehavior Calls
 
-    private void Start () 
+    private void OnEnable () 
     {
-        if(BoardManager.Singleton != null)
+        if (BoardManager.Singleton != null)
             BoardManager.Singleton.registerBoardWaypoint(gameObject.name, gameObject);
     }
 
