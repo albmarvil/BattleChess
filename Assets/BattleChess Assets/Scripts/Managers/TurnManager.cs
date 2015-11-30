@@ -10,8 +10,8 @@ public enum PlayerType
 {
     HUMAN = 0,
     CPU1,
-    CPU2,
-    CPU3
+    CPU2 = 5,
+    CPU3 = 10
 }
 
 public delegate void onTurnStart(Turn t);
@@ -257,19 +257,29 @@ public class TurnManager : MonoBehaviour {
             ///EJECUCION DE MIN MAX
             ///
             ///TABLERO RESULTADO (MOVIMIENTO)
+            MinMaxJob job = new MinMaxJob(2);
+            job.Start();
+
+            yield return StartCoroutine(job.WaitFor());
             
             ////HACK
-            List<BoardStatus> children = BoardManager.Singleton.CurrentStatus.getAllBoardMovements(CurrentTurn.PlayerColor);
 
-
-            int index = Random.Range(0, children.Count);
-
-            BoardStatus st = children[index];
-
+            BoardStatus st = ((ChessNode)job.RandomResult).Board;
             movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
 
+            /////////////////
+
+            //List<BoardStatus> children = BoardManager.Singleton.CurrentStatus.getAllBoardMovements(CurrentTurn.PlayerColor);
+
+
+            //int index = Random.Range(0, children.Count);
+
+            //BoardStatus st = children[index];
+
+            //movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
+
             ///ESPERA ALEATORIA DE TIEMPO
-            yield return new WaitForSeconds(.1f);
+            //yield return new WaitForSeconds(.1f);
         }
 
         if(m_onTurnMovementDecisionFinished != null)

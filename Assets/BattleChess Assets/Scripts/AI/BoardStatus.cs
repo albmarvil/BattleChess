@@ -929,8 +929,9 @@ public class BoardStatus {
                     v = j;
                     if (h >= 0 && h < 8 && v >= 0 && v < 8)
                     {
+                        string previous = BoardManager.statusIndexesToCode(h - 1, v);
                         string code = BoardManager.statusIndexesToCode(h, v);
-                        if (m_status[code] == ChessPiece.NONE)
+                        if (m_status[code] == ChessPiece.NONE && m_status[previous] == ChessPiece.NONE)
                         {
                             result.Add(code);
                         }
@@ -979,8 +980,9 @@ public class BoardStatus {
                     v = j;
                     if (h >= 0 && h < 8 && v >= 0 && v < 8)
                     {
+                        string previous = BoardManager.statusIndexesToCode(h + 1, v);
                         string code = BoardManager.statusIndexesToCode(h, v);
-                        if (getPieceColor(m_status[code]) != color)
+                        if (m_status[code] == ChessPiece.NONE && m_status[previous] == ChessPiece.NONE)
                         {
                             result.Add(code);
                         }
