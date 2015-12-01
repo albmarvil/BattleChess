@@ -14,7 +14,7 @@ using UnityEngine;
 using System.Collections;
 using BSEngine.Threading;
 
-public class MinMaxJob : ThreadedJob
+public class MinMaxJob : ThreadedJobTimer
 {
 
     #region Private params
@@ -36,7 +36,8 @@ public class MinMaxJob : ThreadedJob
     /// Class constructor
     /// </summary>
     /// <param name="depth">Maximum depth when running the algorithm</param>
-    public MinMaxJob(int depth)
+    /// <param name="maxProcessingTime">Maximum thread job time</param>
+    public MinMaxJob(int depth, float maxProcessingTime) : base(maxProcessingTime)
     {
         m_origin = new ChessNode(BoardManager.Singleton.CurrentStatus, depth, null, NodeType.MAX);
         m_processedNodes = 0;
@@ -49,9 +50,16 @@ public class MinMaxJob : ThreadedJob
     {
         get 
         {
-            System.Random rnd = new System.Random();
-            int index = rnd.Next(m_origin.BestChildren.Count);
-            return m_origin.BestChildren[index]; 
+            if (m_origin.BestChildren.Count > 0)
+            {
+                System.Random rnd = new System.Random();
+                int index = rnd.Next(m_origin.BestChildren.Count);
+                return m_origin.BestChildren[index];
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
@@ -170,6 +178,11 @@ public class MinMaxJob : ThreadedJob
     protected override void OnFinished()
     {
         //Debug.Log("FIN para " + m_origin.NodeType);
+    }
+
+    protected override void OnAbort()
+    {
+        //Debug.Log("OnAbort");
     }
 
     #endregion

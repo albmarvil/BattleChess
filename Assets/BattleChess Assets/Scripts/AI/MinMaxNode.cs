@@ -36,7 +36,7 @@ public abstract class MinMaxNode
     /// <summary>
     /// Best child evaluated in MinMax Algorithm, if null, this node hasn't been evaluated yet
     /// </summary>
-    private List<MinMaxNode> m_bestChild = new List<MinMaxNode>();
+    private List<MinMaxNode> m_bestChildren = new List<MinMaxNode>();
 
     /// <summary>
     /// Depth of the node. 0 depth means that the node is in the MinMax's Algorithm border
@@ -87,7 +87,7 @@ public abstract class MinMaxNode
     /// </summary>
     public List<MinMaxNode> BestChildren
     {
-        get { return m_bestChild; }
+        get { return m_bestChildren; }
         //set { m_bestChild = value; }
     }
 

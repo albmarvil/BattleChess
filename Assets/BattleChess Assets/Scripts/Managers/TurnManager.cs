@@ -257,16 +257,23 @@ public class TurnManager : MonoBehaviour {
             ///EJECUCION DE MIN MAX
             ///
             ///TABLERO RESULTADO (MOVIMIENTO)
-            MinMaxJob job = new MinMaxJob(2);
+            Debug.Log("Ejecuto Minimax con 10 segundos");
+            MinMaxJob job = new MinMaxJob(4, 10.0f);
             job.Start();
 
             yield return StartCoroutine(job.WaitFor());
             
             ////HACK
-
-            BoardStatus st = ((ChessNode)job.RandomResult).Board;
-            movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
-
+            ChessNode result = (ChessNode)job.RandomResult;
+            if (result != null)
+            {
+                BoardStatus st = ((ChessNode)job.RandomResult).Board;
+                movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
+            }
+            else
+            {
+                Debug.LogError("Algoritmo MinMax sin resultado Nodos Procesados: "+job.ProcessedNodes);
+            }
             /////////////////
 
             //List<BoardStatus> children = BoardManager.Singleton.CurrentStatus.getAllBoardMovements(CurrentTurn.PlayerColor);
@@ -279,7 +286,7 @@ public class TurnManager : MonoBehaviour {
             //movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
 
             ///ESPERA ALEATORIA DE TIEMPO
-            //yield return new WaitForSeconds(.1f);
+            //yield return new WaitForSeconds(1.0f);
         }
 
         if(m_onTurnMovementDecisionFinished != null)
