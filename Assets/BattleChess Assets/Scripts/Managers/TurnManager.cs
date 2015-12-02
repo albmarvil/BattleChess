@@ -39,7 +39,12 @@ public struct Turn
     /// <summary>
     /// Player piece color of this turn movement
     /// </summary>
-    private ChessPiece m_PlayerColor;
+    private ChessPiece m_playerColor;
+
+    /// <summary>
+    /// Player tipe. Human or CPU
+    /// </summary>
+    private PlayerType m_playerType;
 
     public int TurnOrder
     {
@@ -61,13 +66,19 @@ public struct Turn
 
     public ChessPiece PlayerColor
     {
-        get { return m_PlayerColor; }
-        set { m_PlayerColor = value; }
+        get { return m_playerColor; }
+        set { m_playerColor = value; }
+    }
+
+    public PlayerType PlayerType
+    {
+        get { return m_playerType; }
+        set { m_playerType = value; }
     }
 
     public override string ToString()
     {
-        return "Turn: " + m_turnOrder + "("+m_PlayerColor+") - " + m_movement.PieceMoved + " from " + m_movement.Origin + " to " + m_movement.Destination;
+        return "Turn: " + m_turnOrder + "("+m_playerColor+") - " + m_movement.PieceMoved + " from " + m_movement.Origin + " to " + m_movement.Destination;
     }
 }
 
@@ -116,6 +127,8 @@ public class TurnManager : MonoBehaviour {
 
 
     #region Public params
+
+    public MovementSelector m_humanMovementSelector = null;
 
     #endregion
 
@@ -178,6 +191,7 @@ public class TurnManager : MonoBehaviour {
         Turn t1 = new Turn(); ;
         t1.TurnOrder = 1;
         t1.PlayerColor = ChessPiece.WHITE;
+        t1.PlayerType = player1;
 
         m_turnRecord.Add(t1);
 
@@ -249,16 +263,18 @@ public class TurnManager : MonoBehaviour {
 
         if (currentPlayer == PlayerType.HUMAN)
         {
+            ///While HUMAN is thinking, CPU can think too
+        
             ///WAIT FOR MOVEMENT
-            yield return null;
+            yield return StartCoroutine(m_humanMovementSelector.WaitForMovement());
+            movement = m_humanMovementSelector.Movement;
         }
         else
         {
             ///EJECUCION DE MIN MAX
             ///
             ///TABLERO RESULTADO (MOVIMIENTO)
-            Debug.Log("Ejecuto Minimax con 10 segundos");
-            MinMaxJob job = new MinMaxJob(4, 10.0f);
+            MinMaxJob job = new MinMaxJob(3, 30.0f);
             job.Start();
 
             yield return StartCoroutine(job.WaitFor());
@@ -309,6 +325,7 @@ public class TurnManager : MonoBehaviour {
         Turn next = new Turn();
         next.PlayerColor = CurrentTurn.PlayerColor == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE;
         next.TurnOrder = CurrentTurn.TurnOrder + 1;
+        next.PlayerType = next.TurnOrder % 2 == 0 ? m_player2 : m_player1;
         m_turnRecord.Add(next);
 
         if(m_onTurnFinished != null)
@@ -330,7 +347,7 @@ public class TurnManager : MonoBehaviour {
     {
         ///TO DO
         ///leer de Blackboard lo necesario para recueprar la configuracion de juego
-        startMatch(PlayerType.CPU1, PlayerType.CPU1);
+        startMatch(PlayerType.HUMAN, PlayerType.CPU1);
     }
 
     #endregion

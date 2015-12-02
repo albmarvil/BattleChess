@@ -22,7 +22,7 @@ using System.Collections.Generic;
 /// </summary>
 public enum ChessPiece
 {
-    NONE,
+    NONE = 0,
     WHITE_KING,
     BLACK_KING,
     WHITE_QUEEN,
@@ -60,7 +60,17 @@ public struct Movement
     private ChessPiece m_pieceMoved;
 
     /// <summary>
-    /// Public consturctor
+    /// Public constructor. Default constructor. Values set to default (empty, isn't a valid movement)
+    /// </summary>
+    //public Movement()
+    //{
+    //    m_origin = "";
+    //    m_destination = "";
+    //    m_pieceMoved = ChessPiece.NONE;
+    //}
+
+    /// <summary>
+    /// Public constructor
     /// </summary>
     /// <param name="origin">Origin position</param>
     /// <param name="destination">Destination position</param>
