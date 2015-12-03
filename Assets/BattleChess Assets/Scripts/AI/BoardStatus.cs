@@ -357,12 +357,23 @@ public class BoardStatus {
                 {
                     result.Add(newBoard);
                 }
-                //else
-                //{
-                //    Debug.LogWarning("Descartado por Check");
-                //}
             }
         }
+
+        //Pawn promotion.
+
+        //int i = color == ChessPiece.WHITE ? 7 : 1;
+
+        //string code = "";
+
+        //for (int j = 0; j < 8; ++j)
+        //{
+        //    code = BoardManager.statusIndexesToCode(i, j);
+        //    if ((color == ChessPiece.WHITE && Status[code] == ChessPiece.WHITE_PAWN) || (color == ChessPiece.BLACK && Status[code] == ChessPiece.BLACK_PAWN))
+        //    {
+        //        result.AddRange(promotePawn(color, i, j));
+        //    }
+        //}
 
         return result;
     }
@@ -1160,18 +1171,16 @@ public class BoardStatus {
     /// <returns>True if the board is in CHECK MATE</returns>
     public bool CheckMate(ChessPiece color)
     {
-        bool check = Check(color);
-
         List<BoardStatus> nextStatus = getAllBoardMovements(color);
 
-        bool mate = false;
+        bool mate = nextStatus.Count == 0;
 
         foreach (BoardStatus st in nextStatus)
         {
             mate = mate || st.Check(color);
         }
 
-        return check && mate;
+        return mate;
     }
 
     /// <summary>
@@ -1273,6 +1282,64 @@ public class BoardStatus {
         }
 
         return false;
+    }
+
+
+    public List<BoardStatus> promotePawn(ChessPiece color, int i, int j)
+    {
+        List<BoardStatus> result = new List<BoardStatus>();
+
+        string code = BoardManager.statusIndexesToCode(i, j);
+
+        switch (color)
+        {
+            case ChessPiece.WHITE:
+
+                if (i == 7)
+                {
+                    BoardStatus st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.WHITE_BISHOP;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.WHITE_KNIGHT;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.WHITE_QUEEN;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.WHITE_ROOK;
+                    result.Add(st);
+                }
+                break;
+
+            case ChessPiece.BLACK:
+
+                if (i == 1)
+                {
+                    BoardStatus st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.BLACK_BISHOP;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.BLACK_KNIGHT;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.BLACK_QUEEN;
+                    result.Add(st);
+
+                    st = new BoardStatus(this);
+                    st.Status[code] = ChessPiece.BLACK_ROOK;
+                    result.Add(st);
+                }
+                break;
+        }
+        
+
+        return result;
     }
 
     #endregion

@@ -128,8 +128,6 @@ public class ChessNode : MinMaxNode
     /// </summary>
     public override bool EndNodeSpecificCondition()
     {
-        //System.Diagnostics.Stopwatch stp = new System.Diagnostics.Stopwatch();
-        //stp.Start();
 
         ChessPiece playerMax = TurnManager.Singleton.CurrentTurn.PlayerColor;
         ChessPiece playerMin = playerMax == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE;
@@ -137,30 +135,19 @@ public class ChessNode : MinMaxNode
         ChessPiece color = ChessPiece.NONE;
         color = NodeType == global::NodeType.MAX ? playerMax : playerMin;
 
-        bool res = false;
 
         if (m_board.Draw())
         {
-            res = true;
+            return true;
         }
-        else if (Parent != null /*&& Parent.Depth == 1*/)
+        else if (Parent != null)
         {
-            //Debug.LogWarning("Parent distinto de null DEpth: " + Parent.Depth);
-            //if (Parent.Depth == 1)
-            //{
-                //Debug.LogWarning("Compruebo PARENT CHECK");
-                if (((ChessNode)Parent).Board.Check(color))
-                {
-                    Debug.LogWarning("Compruebo CHECK MATE");
-                    res = m_board.CheckMate(color);
-                }
-            //}
+            return m_board.CheckMate(color);
         }
-
-        //stp.Stop();
-        //Debug.Log("EndNode() : Depth: " + Depth + " T: " + stp.ElapsedMilliseconds);
-
-        return res;
+        else
+        {
+            return false;
+        }
     }
     #endregion
 

@@ -80,7 +80,7 @@ public class GameState : State
 
         //TO DO MouseCfg config
 
-        MouseCfg cfg = new MouseCfg(false, false, 10.0f);
+        MouseCfg cfg = new MouseCfg(false, false, 10.0f, true);
 
 
         return new InputSet("GameStateInputSet", keyBindings, cfg);

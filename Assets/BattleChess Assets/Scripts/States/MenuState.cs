@@ -69,7 +69,13 @@ public class MenuState : State
         orders.Add("EXIT");
         keyBindings.Add(BSKeyCode.Escape, orders);
 
-        return new InputSet("MenuStateInputSet", keyBindings, null);
+        orders = new List<string>();
+        orders.Add("ANGRY_GOAT_CLICK");
+        keyBindings.Add(BSKeyCode.Mouse0, orders);
+
+        MouseCfg cfg = new MouseCfg(false, false, 10.0f, true);
+
+        return new InputSet("MenuStateInputSet", keyBindings, cfg);
     }
 
     /// <summary>

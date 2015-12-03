@@ -1,6 +1,24 @@
-﻿using UnityEngine;
+﻿///----------------------------------------------------------------------
+/// @file TurnManager.cs
+///
+/// This file contains the declaration of TurnManager class.
+/// 
+/// Turn manager controls all the turn flow.
+/// 
+/// The turn is controlled by coroutines, waiting for each action to be finished.
+/// 
+/// There are multiple callbacks for each different steps during a Turn
+///
+/// @author Alberto Martinez Villaran <tukaram92@gmail.com>
+/// @date 03/12/2015
+///----------------------------------------------------------------------
+
+
+
+using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using BSEngine;
 
 /// <summary>
 /// Enum used to define different ind of players
@@ -9,9 +27,9 @@ using System.Collections;
 public enum PlayerType
 {
     HUMAN = 0,
-    CPU1,
-    CPU2 = 5,
-    CPU3 = 10
+    CPU,
+    //CPU2 = 5,
+    //CPU3 = 10
 }
 
 public delegate void onTurnStart(Turn t);
@@ -272,9 +290,11 @@ public class TurnManager : MonoBehaviour {
         else
         {
             ///EJECUCION DE MIN MAX
-            ///
-            ///TABLERO RESULTADO (MOVIMIENTO)
-            MinMaxJob job = new MinMaxJob(3, 30.0f);
+
+            float TimeToThink = StorageMgr.Blackboard.Get<float>("TimeToThink");
+            int MaxDepth = StorageMgr.Blackboard.Get<int>("MaxDepth");
+            
+            MinMaxJob job = new MinMaxJob(MaxDepth, TimeToThink);
             job.Start();
 
             yield return StartCoroutine(job.WaitFor());
@@ -290,19 +310,6 @@ public class TurnManager : MonoBehaviour {
             {
                 Debug.LogError("Algoritmo MinMax sin resultado Nodos Procesados: "+job.ProcessedNodes);
             }
-            /////////////////
-
-            //List<BoardStatus> children = BoardManager.Singleton.CurrentStatus.getAllBoardMovements(CurrentTurn.PlayerColor);
-
-
-            //int index = Random.Range(0, children.Count);
-
-            //BoardStatus st = children[index];
-
-            //movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
-
-            ///ESPERA ALEATORIA DE TIEMPO
-            //yield return new WaitForSeconds(1.0f);
         }
 
         if(m_onTurnMovementDecisionFinished != null)
@@ -313,6 +320,27 @@ public class TurnManager : MonoBehaviour {
 
         BoardManager.Singleton.UpdateCurrentStatus(movement);
 
+        ////AVISO Y COMPROBACIONES DE FIN DE JUEGO
+        if (BoardManager.Singleton.CurrentStatus.Draw())
+        {
+            Debug.LogWarning("Draw!!!");
+        }
+        else if (BoardManager.Singleton.CurrentStatus.Check(ChessPiece.WHITE))
+        {
+            Debug.LogWarning("Check to White");
+        }
+        else if (BoardManager.Singleton.CurrentStatus.Check(ChessPiece.BLACK))
+        {
+            Debug.LogWarning("Check to Black");
+        }
+        else if (BoardManager.Singleton.CurrentStatus.CheckMate(ChessPiece.WHITE))
+        {
+            Debug.LogError("END MATCH - Check Mate to White. BLACK WINS");
+        } 
+        else if (BoardManager.Singleton.CurrentStatus.CheckMate(ChessPiece.BLACK))
+        {
+            Debug.LogError("END MATCH - Check Mate to Black. WHITE WINS");
+        }
 
         ///Registro de turno y turno siguiente
         Turn t = CurrentTurn;
@@ -347,7 +375,7 @@ public class TurnManager : MonoBehaviour {
     {
         ///TO DO
         ///leer de Blackboard lo necesario para recueprar la configuracion de juego
-        startMatch(PlayerType.HUMAN, PlayerType.CPU1);
+        startMatch(PlayerType.HUMAN, PlayerType.CPU);
     }
 
     #endregion

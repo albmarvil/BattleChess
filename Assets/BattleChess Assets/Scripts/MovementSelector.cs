@@ -22,9 +22,14 @@ public class MovementSelector : MonoBehaviour {
 
     #region Public params
     /// <summary>
-    /// Reference to the marker prefab
+    /// Reference to the blue marker prefab
     /// </summary>
-    public GameObject m_marker = null;
+    public GameObject m_blueMarker = null;
+
+    /// <summary>
+    /// Reference to the red marker prefab
+    /// </summary>
+    public GameObject m_redMarker = null;
 
     #endregion
 
@@ -46,6 +51,9 @@ public class MovementSelector : MonoBehaviour {
 
     #region Public methods
 
+    /// <summary>
+    /// Coroutine used to wait for player movement
+    /// </summary>
     public IEnumerator WaitForMovement()
     {
         while (m_movement.Destination == "NONE")
@@ -54,6 +62,9 @@ public class MovementSelector : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Current movement made by the player
+    /// </summary>
     public Movement Movement
     {
         get { return m_movement; }
@@ -95,7 +106,11 @@ public class MovementSelector : MonoBehaviour {
     }
 
 
-
+    /// <summary>
+    /// Private method used to select the piece to move.
+    /// 
+    /// It will cast a ray over the piece and draw all the possible places where that piece can move
+    /// </summary>
     private void selectPiece()
     {
         foreach (GameObject obj in m_markers)
@@ -122,30 +137,52 @@ public class MovementSelector : MonoBehaviour {
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, mask))
         {
             PieceInfo tag = hit.collider.gameObject.GetComponent<PieceInfo>();
-            //if (tag != null)
-            //{
+            
             Assert.assert(tag != null, "GameObject retrieved by raycast isn't a valid pieces, check the mask or the layer config");
-                ChessPiece piece = tag.Piece;
+            ChessPiece piece = tag.Piece;
 
-                m_movement.PieceMoved = piece;
-                m_movement.Origin = tag.TileCode;
+            m_movement.PieceMoved = piece;
+            m_movement.Origin = tag.TileCode;
 
-                HashSet<string> movements = BoardManager.Singleton.CurrentStatus.getAllPieceMovements(piece, tag.TileCode);
+            HashSet<string> movements = BoardManager.Singleton.CurrentStatus.getAllPieceMovements(piece, tag.TileCode);
 
-                foreach (string movement in movements)
+            foreach (string movement in movements)
+            {
+                BoardStatus st = new BoardStatus(BoardManager.Singleton.CurrentStatus);
+                st.movePieceToDestination(tag.TileCode, movement);
+                if (!st.Check(TurnManager.Singleton.CurrentTurn.PlayerColor))
                 {
                     Vector3 pos = BoardManager.Singleton.Waypoints[movement].transform.position;
                     pos.y = pos.y + 0.55f;
 
-                    GameObject marker = PoolMgr.Singleton.Instatiate(m_marker, pos, Quaternion.identity);
+                    Quaternion rotation = Quaternion.AngleAxis(-90.0f, Vector3.right);
+
+                    GameObject marker = null;
+
+                    bool condition = BoardManager.Singleton.CurrentStatus.Status[movement] != ChessPiece.NONE;
+
+                    if (condition)
+                    {
+                        marker = PoolMgr.Singleton.Instatiate(m_redMarker, pos, rotation);
+                    }
+                    else
+                    {
+                        marker = PoolMgr.Singleton.Instatiate(m_blueMarker, pos, rotation);
+                    }
+
                     marker.GetComponent<PieceInfo>().TileCode = movement;
 
                     m_markers.Add(marker);
                 }
-            //}
+            }
         }
     }
 
+    /// <summary>
+    /// Method used to complete the movement.
+    /// 
+    /// After selecting a piece a marker should be selected as destination position
+    /// </summary>
     private void selectMarkerDestination()
     {
         Ray ray = Camera.main.ScreenPointToRay(m_mousePos);
@@ -168,7 +205,10 @@ public class MovementSelector : MonoBehaviour {
         }
     }
 
-
+    /// <summary>
+    /// On turn start callback, used to clean markers on the board
+    /// </summary>
+    /// <param name="t"></param>
     private void onTurnStart(Turn t)
     {
         for (int i = 0; i < m_markers.Count; ++i)

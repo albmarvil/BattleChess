@@ -17,7 +17,21 @@ using BSEngine;
 using BSEngine.Input;
 
 
-public class MenuInputController : MonoBehaviour {
+public class MenuInputController : MonoBehaviour
+{
+
+    #region Publica paramas
+    /// <summary>
+    /// Reference to the Main MenuCanvas
+    /// </summary>
+    public GameObject m_MenuCanvas = null;
+
+    /// <summary>
+    /// Reference to the Match config canvas
+    /// </summary>
+    public GameObject m_MatchCanvas = null;
+
+    #endregion
 
 
     #region Public methods
@@ -30,7 +44,56 @@ public class MenuInputController : MonoBehaviour {
     {
         if (e.isOk)
         {
-            GameMgr.Singleton.ChangeState("Game");
+            StartGame();
+        }
+    }
+
+    public void StartGame()
+    {
+        GameMgr.Singleton.ChangeState("Game");
+    }
+
+    public void Exit()
+    {
+        Application.Quit();
+    }
+
+    public void LoadMatchConfigScreen()
+    {
+        m_MenuCanvas.SetActive(false);
+        m_MatchCanvas.SetActive(true);
+    }
+
+    public void UnloadMatchConfigScreen()
+    {
+        m_MenuCanvas.SetActive(true);
+        m_MatchCanvas.SetActive(false);
+    }
+
+    public void setEasyMatchConfig(bool toggle)
+    {
+        if (toggle)
+        {
+            StorageMgr.Blackboard.Set<float>("TimeToThink", MatchConfigManager.Singleton.m_DifficultyConfig[0].m_TimeToThink);
+            StorageMgr.Blackboard.Set<int>("MaxDepth", MatchConfigManager.Singleton.m_DifficultyConfig[0].m_MaxDepth);
+        }
+    }
+
+    public void setMediumMatchConfig(bool toggle)
+    {
+        if (toggle)
+        {
+            StorageMgr.Blackboard.Set<float>("TimeToThink", MatchConfigManager.Singleton.m_DifficultyConfig[1].m_TimeToThink);
+            StorageMgr.Blackboard.Set<int>("MaxDepth", MatchConfigManager.Singleton.m_DifficultyConfig[1].m_MaxDepth);
+        }
+    }
+
+    public void setHardMatchConfig(bool toggle)
+    {
+        if (toggle)
+        {
+            StorageMgr.Blackboard.Set<float>("TimeToThink", MatchConfigManager.Singleton.m_DifficultyConfig[2].m_TimeToThink);
+            StorageMgr.Blackboard.Set<int>("MaxDepth", MatchConfigManager.Singleton.m_DifficultyConfig[2].m_MaxDepth);
         }
     }
 
