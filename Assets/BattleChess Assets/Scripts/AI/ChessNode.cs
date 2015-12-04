@@ -14,6 +14,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using BSEngine;
 
 /// <summary>
 /// Enum with the individual score to each piece in Chess evaluation
@@ -70,6 +71,8 @@ public class ChessNode : MinMaxNode
         ChessPiece playerMax = TurnManager.Singleton.CurrentTurn.PlayerColor;
         ChessPiece playerMin = playerMax == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE;
 
+        
+
         ChessPiece color = ChessPiece.NONE;
         color = NodeType == global::NodeType.MAX ? playerMax : playerMin;
 
@@ -79,12 +82,15 @@ public class ChessNode : MinMaxNode
         ChessNode node = null;
         for (int i = 0; i < childrenBoards.Count; ++i)
         {
-            node = new ChessNode(childrenBoards[i], Depth - 1, this, NodeType == global::NodeType.MIN ? global::NodeType.MAX : global::NodeType.MAX);
+            node = new ChessNode(childrenBoards[i], Depth - 1, this, NodeType == global::NodeType.MIN ? global::NodeType.MAX : global::NodeType.MIN);
             res.Add(node);
         }
 
         //stp.Stop();
-        //Debug.Log("getChildren() : Depth: " + Depth + " - T: " + stp.ElapsedMilliseconds + " Count: " + res.Count);
+        //DataTable data = StorageMgr.Blackboard.Get<DataTable>("Tiempos");
+        //DataTable depthData = (DataTable)data[Depth];
+        //depthData.Add(stp.ElapsedMilliseconds);
+        
         return res;
     }
 

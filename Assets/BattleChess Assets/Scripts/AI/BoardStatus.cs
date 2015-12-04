@@ -125,6 +125,38 @@ public class BoardStatus {
     /// </summary>
     private List<string> m_blackPiecesPosition = new List<string>();
 
+    /// <summary>
+    /// Node ID
+    /// </summary>
+    private int m_ID;
+
+    /// <summary>
+    /// Static class parameter to calculate the node IDs
+    /// </summary>
+    private static int m_NextID = 0;
+
+    //private static Dictionary<int, Dictionary<ChessPiece, List<BoardStatus>>> m_boardCache = new Dictionary<int, Dictionary<ChessPiece, List<BoardStatus>>>();
+
+    //private static Dictionary<int, BoardStatus> m_CheckMateCache = new Dictionary<int, BoardStatus>();
+
+    //private static Dictionary<int, BoardStatus> m_CheckCache = new Dictionary<int, BoardStatus>();
+
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Property to acces to the next node ID
+    /// </summary>
+    private int NextID
+    {
+        get
+        {
+            m_NextID++;
+            return m_NextID;
+        }
+    }
+
     #endregion
 
     #region Public methods
@@ -134,6 +166,7 @@ public class BoardStatus {
     /// </summary>
     public BoardStatus()
     {
+        m_ID = NextID;
         setToStartingStatus();
     }
 
@@ -154,6 +187,8 @@ public class BoardStatus {
 
         m_blackPiecesPosition = new List<string>();
         m_blackPiecesPosition.AddRange(status.m_blackPiecesPosition);
+
+        m_ID = NextID;
     }
 
     /// <summary>
@@ -162,6 +197,14 @@ public class BoardStatus {
     public Dictionary<string, ChessPiece> Status
     {
         get { return m_status; }
+    }
+
+    /// <summary>
+    /// Node ID
+    /// </summary>
+    public int ID
+    {
+        get { return m_ID; }
     }
 
     /// <summary>
@@ -341,40 +384,66 @@ public class BoardStatus {
     public List<BoardStatus> getAllBoardMovements(ChessPiece color)
     {
         List<BoardStatus> result = new List<BoardStatus>();
+        //if (m_boardCache.ContainsKey(m_ID) && m_boardCache[m_ID].ContainsKey(color))
+        //{
+        //    //Debug.LogWarning(m_ID + " estaba cacheado");
+        //    result = m_boardCache[m_ID][color];
 
-        List<string> piecesToMove = color == ChessPiece.WHITE ? WhitePieces : BlackPieces;
 
 
-        foreach (string tile in piecesToMove)
-        {
-            ChessPiece piece = m_status[tile];
-            HashSet<string> movements = getAllPieceMovements(piece, tile);
-            foreach (string movement in movements)
+        //    //foreach (BoardStatus st in result)
+        //    //{
+        //    //    Movement m = this.getMovementDifference(color, st);
+        //    //    Debug.Log(st.ID + " Origin: " + m.Origin + " Dest: " + m.Destination + " Piece: " + m.PieceMoved);
+        //    //}
+        //}
+        //else
+        //{
+            List<string> piecesToMove = color == ChessPiece.WHITE ? WhitePieces : BlackPieces;
+
+
+            foreach (string tile in piecesToMove)
             {
-                BoardStatus newBoard = new BoardStatus(this);
-                newBoard.movePieceToDestination(tile, movement);
-                if (!newBoard.Check(color))
+                ChessPiece piece = m_status[tile];
+                HashSet<string> movements = getAllPieceMovements(piece, tile);
+                foreach (string movement in movements)
                 {
-                    result.Add(newBoard);
+                    BoardStatus newBoard = new BoardStatus(this);
+                    newBoard.movePieceToDestination(tile, movement);
+                    if (!newBoard.Check(color))
+                    {
+                        result.Add(newBoard);
+                    }
                 }
             }
-        }
 
-        //Pawn promotion.
+            //Pawn promotion.
 
-        //int i = color == ChessPiece.WHITE ? 7 : 1;
+            //int i = color == ChessPiece.WHITE ? 7 : 1;
 
-        //string code = "";
+            //string code = "";
 
-        //for (int j = 0; j < 8; ++j)
-        //{
-        //    code = BoardManager.statusIndexesToCode(i, j);
-        //    if ((color == ChessPiece.WHITE && Status[code] == ChessPiece.WHITE_PAWN) || (color == ChessPiece.BLACK && Status[code] == ChessPiece.BLACK_PAWN))
-        //    {
-        //        result.AddRange(promotePawn(color, i, j));
-        //    }
+            //for (int j = 0; j < 8; ++j)
+            //{
+            //    code = BoardManager.statusIndexesToCode(i, j);
+            //    if ((color == ChessPiece.WHITE && Status[code] == ChessPiece.WHITE_PAWN) || (color == ChessPiece.BLACK && Status[code] == ChessPiece.BLACK_PAWN))
+            //    {
+            //        result.AddRange(promotePawn(color, i, j));
+            //    }
+            //}
+
+            //if (m_boardCache.ContainsKey(m_ID))
+            //{
+            //    m_boardCache[m_ID].Add(color, result);
+            //}
+            //else
+            //{
+            //    Dictionary<ChessPiece, List<BoardStatus>> cache = new Dictionary<ChessPiece, List<BoardStatus>>();
+            //    cache.Add(color, result);
+            //    m_boardCache.Add(m_ID, cache);
+            //}
+
         //}
-
         return result;
     }
 
@@ -1111,26 +1180,39 @@ public class BoardStatus {
     /// <param name="checking">(REF) list of the cheking pieces</param>
     public bool Check(ChessPiece color, ref List<string> checking)
     {
-        List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
+        //if (m_CheckCache.ContainsKey(m_ID))
+        //{
+        //    Debug.LogWarning(m_ID + " estaba cacheado en check");
+        //    return true;
+        //}
+        //else
+        //{
+            List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
 
-        string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
+            string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
 
-        HashSet<string> rivalMovements = new HashSet<string>();
+            HashSet<string> rivalMovements = new HashSet<string>();
 
-        bool res = false;
+            bool res = false;
 
-        foreach (string rivalPiece in rivalPieces)
-        {
-            rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
-
-            res = res || rivalMovements.Contains(KingPos);
-            if (res)
+            foreach (string rivalPiece in rivalPieces)
             {
-                checking.Add(rivalPiece);
-            }
-        }
+                rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
 
-        return res;
+                res = res || rivalMovements.Contains(KingPos);
+                if (res)
+                {
+                    checking.Add(rivalPiece);
+                }
+            }
+
+            //if (res)
+            //{
+            //    m_CheckCache.Add(m_ID, this);
+            //}
+
+            return res;
+        //} 
     }
 
     /// <summary>
@@ -1139,26 +1221,39 @@ public class BoardStatus {
     /// <param name="color">Color to check</param>
     public bool Check(ChessPiece color)
     {
-        List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
+        //if (m_CheckCache.ContainsKey(m_ID))
+        //{
+        //    Debug.LogWarning(m_ID + " estaba cacheado en check");
+        //    return true;
+        //}
+        //else
+        //{
+            List<string> rivalPieces = color == ChessPiece.WHITE ? BlackPieces : WhitePieces;
 
-        string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
+            string KingPos = color == ChessPiece.WHITE ? WhiteKing : BlackKing;
 
-        HashSet<string> rivalMovements = new HashSet<string>();
+            HashSet<string> rivalMovements = new HashSet<string>();
 
-        bool res = false;
+            bool res = false;
 
-        foreach (string rivalPiece in rivalPieces)
-        {
-            rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
-
-            res = res || rivalMovements.Contains(KingPos);
-            if (res)
+            foreach (string rivalPiece in rivalPieces)
             {
-                return res;
-            }
-        }
+                rivalMovements = getAllPieceMovements(m_status[rivalPiece], rivalPiece);
 
-        return res;
+                res = res || rivalMovements.Contains(KingPos);
+                if (res)
+                {
+                    return res;
+                }
+            }
+
+            //if (res)
+            //{
+            //    m_CheckCache.Add(m_ID, this);
+            //}
+
+            return res;
+        //}
     }
 
     /// <summary>
@@ -1171,16 +1266,29 @@ public class BoardStatus {
     /// <returns>True if the board is in CHECK MATE</returns>
     public bool CheckMate(ChessPiece color)
     {
-        List<BoardStatus> nextStatus = getAllBoardMovements(color);
+        //if (m_CheckMateCache.ContainsKey(m_ID))
+        //{
+        //    Debug.LogWarning(m_ID + " estaba cacheado en checkMate");
+        //    return true;
+        //}
+        //else
+        //{
+            List<BoardStatus> nextStatus = getAllBoardMovements(color);
 
-        bool mate = nextStatus.Count == 0;
+            bool mate = nextStatus.Count == 0;
 
-        foreach (BoardStatus st in nextStatus)
-        {
-            mate = mate || st.Check(color);
-        }
+            foreach (BoardStatus st in nextStatus)
+            {
+                mate = mate || st.Check(color);
+            }
 
-        return mate;
+            //if (mate)
+            //{
+            //    m_CheckMateCache.Add(m_ID, this);
+            //}
+
+            return mate;
+        //}
     }
 
     /// <summary>

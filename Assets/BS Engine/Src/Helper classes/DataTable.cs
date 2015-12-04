@@ -243,6 +243,24 @@ namespace BSEngine
             return data;
         }
 
+        /// <summary>
+        /// Add method, as the dataTable were a List
+        /// </summary>
+        /// <param name="obj">Object to add</param>
+        public void Add(object obj)
+        {
+            int index = m_data.Count;
+            m_data[index.ToString()] = obj;
+        }
+
+        /// <summary>
+        /// Coun tproperty. Number of elements in the dataTable
+        /// </summary>
+        public int Count
+        {
+            get { return m_data.Count; }
+        }
+
         #endregion
         
     }

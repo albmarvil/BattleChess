@@ -36,6 +36,7 @@ public delegate void onTurnStart(Turn t);
 public delegate void onTurnAnimationFinished(Turn t);
 public delegate void onTurnMovementDecisionFinished(Turn t);
 public delegate void onTurnFinished(Turn t);
+public delegate void onEndMatch(Turn t);
 
 public struct Turn
 {
@@ -145,8 +146,23 @@ public class TurnManager : MonoBehaviour {
 
 
     #region Public params
-
+    /// <summary>
+    /// Reference to the human movement selector
+    /// </summary>
     public MovementSelector m_humanMovementSelector = null;
+
+
+    public GameObject m_CheckToBlackLabel = null;
+
+    public GameObject m_CheckToWhiteLabel = null;
+
+    public GameObject m_CheckMateToBlackLabel = null;
+
+    public GameObject m_CheckMateToWhiteLabel = null;
+
+    public GameObject m_WhiteTurnLabel = null;
+
+    public GameObject m_BlackTurnLabel = null;
 
     #endregion
 
@@ -186,6 +202,11 @@ public class TurnManager : MonoBehaviour {
     /// Delegate/Callback when turn finishes
     /// </summary>
     private onTurnFinished m_onTurnFinished = null;
+
+    /// <summary>
+    /// Delegate/Callback when match finishes
+    /// </summary>
+    private onEndMatch m_onEndMatch = null;
 
     #endregion
 
@@ -255,9 +276,19 @@ public class TurnManager : MonoBehaviour {
         m_onTurnFinished += listener;
     }
 
-    public void unregisterOnTurnFinished(onTurnFinished listener)
+    public void unregisterOnTurnFinishedListener(onTurnFinished listener)
     {
         m_onTurnFinished -= listener;
+    }
+
+    public void registerOnEndMatchListener(onEndMatch listener)
+    {
+        m_onEndMatch += listener;
+    }
+
+    public void unregisterOnEndMatchListener(onEndMatch listener)
+    {
+        m_onEndMatch -= listener;
     }
 
     #endregion
@@ -272,12 +303,27 @@ public class TurnManager : MonoBehaviour {
         ///EJECUCION DE ANIMACION DE TURNO
         yield return null;
 
+        if (CurrentTurn.PlayerColor == ChessPiece.WHITE)
+        {
+            m_WhiteTurnLabel.SetActive(true);
+            m_BlackTurnLabel.SetActive(false);
+        }
+        else if (CurrentTurn.PlayerColor == ChessPiece.BLACK)
+        {
+            m_WhiteTurnLabel.SetActive(false);
+            m_BlackTurnLabel.SetActive(true);
+        }
+
         if(m_onTurnAnimationFinished != null)
             m_onTurnAnimationFinished(CurrentTurn);
 
         PlayerType currentPlayer = CurrentTurn.PlayerColor == ChessPiece.WHITE ? m_player1 : m_player2;
+        ChessPiece playerColor = CurrentTurn.PlayerColor;
+        ChessPiece oponentColor = playerColor == ChessPiece.WHITE ? ChessPiece.BLACK : ChessPiece.WHITE;
 
         Movement movement = new Movement();
+
+        BoardStatus nextBoard = new BoardStatus();
 
         if (currentPlayer == PlayerType.HUMAN)
         {
@@ -286,6 +332,8 @@ public class TurnManager : MonoBehaviour {
             ///WAIT FOR MOVEMENT
             yield return StartCoroutine(m_humanMovementSelector.WaitForMovement());
             movement = m_humanMovementSelector.Movement;
+            nextBoard = new BoardStatus(BoardManager.Singleton.CurrentStatus);
+            nextBoard.movePieceToDestination(movement.Origin, movement.Destination);
         }
         else
         {
@@ -305,6 +353,7 @@ public class TurnManager : MonoBehaviour {
             {
                 BoardStatus st = ((ChessNode)job.RandomResult).Board;
                 movement = BoardManager.Singleton.CurrentStatus.getMovementDifference(CurrentTurn.PlayerColor, st);
+                nextBoard = st;
             }
             else
             {
@@ -318,29 +367,8 @@ public class TurnManager : MonoBehaviour {
         ///EJECUCION DEL MOVIMIENTO
         yield return null;
 
-        BoardManager.Singleton.UpdateCurrentStatus(movement);
+        BoardManager.Singleton.UpdateCurrentStatus(nextBoard);
 
-        ////AVISO Y COMPROBACIONES DE FIN DE JUEGO
-        if (BoardManager.Singleton.CurrentStatus.Draw())
-        {
-            Debug.LogWarning("Draw!!!");
-        }
-        else if (BoardManager.Singleton.CurrentStatus.Check(ChessPiece.WHITE))
-        {
-            Debug.LogWarning("Check to White");
-        }
-        else if (BoardManager.Singleton.CurrentStatus.Check(ChessPiece.BLACK))
-        {
-            Debug.LogWarning("Check to Black");
-        }
-        else if (BoardManager.Singleton.CurrentStatus.CheckMate(ChessPiece.WHITE))
-        {
-            Debug.LogError("END MATCH - Check Mate to White. BLACK WINS");
-        } 
-        else if (BoardManager.Singleton.CurrentStatus.CheckMate(ChessPiece.BLACK))
-        {
-            Debug.LogError("END MATCH - Check Mate to Black. WHITE WINS");
-        }
 
         ///Registro de turno y turno siguiente
         Turn t = CurrentTurn;
@@ -359,7 +387,63 @@ public class TurnManager : MonoBehaviour {
         if(m_onTurnFinished != null)
             m_onTurnFinished(t);
 
-        StartCoroutine(Turn());
+
+        ////AVISO Y COMPROBACIONES DE FIN DE JUEGO
+
+        ////HHACKS!
+        m_CheckToWhiteLabel.SetActive(false);
+        m_CheckToBlackLabel.SetActive(false);
+
+        
+
+        if (BoardManager.Singleton.CurrentStatus.Draw())
+        {
+            Debug.LogWarning("Turn: " + t.TurnOrder + " Draw!!!");
+        }
+        else if (BoardManager.Singleton.CurrentStatus.CheckMate(oponentColor))
+        {
+            if (oponentColor == ChessPiece.WHITE)
+            {
+                Debug.LogWarning("Turn: " + t.TurnOrder + " END MATCH - Check Mate to White. BLACK WINS");
+                m_CheckMateToWhiteLabel.SetActive(true);
+
+                if(m_onEndMatch != null)
+                    m_onEndMatch(CurrentTurn);
+            }
+            else if (oponentColor == ChessPiece.BLACK)
+            {
+                Debug.LogWarning("Turn: " + t.TurnOrder + " END MATCH - Check Mate to Black. WHITE WINS");
+                m_CheckMateToBlackLabel.SetActive(true);
+
+                if(m_onEndMatch != null)
+                    m_onEndMatch(CurrentTurn);
+            }
+            
+        }
+        else if (BoardManager.Singleton.CurrentStatus.Check(oponentColor))
+        {
+            if (oponentColor == ChessPiece.WHITE)
+            {
+                Debug.LogWarning("Turn: " + t.TurnOrder + " Check to White");
+                m_CheckToWhiteLabel.SetActive(true);
+                m_CheckToBlackLabel.SetActive(false);
+                StartCoroutine(Turn());
+            }
+            else if (oponentColor == ChessPiece.BLACK)
+            {
+                Debug.LogWarning("Turn: " + t.TurnOrder + " Check to Black");
+                m_CheckToWhiteLabel.SetActive(false);
+                m_CheckToBlackLabel.SetActive(true);
+                StartCoroutine(Turn());           
+            }
+            
+        }
+        else
+        {
+            StartCoroutine(Turn());
+        }
+
+        
 
         ////HACK
         BoardManager.Singleton.ClearBoard();
@@ -376,7 +460,36 @@ public class TurnManager : MonoBehaviour {
         ///TO DO
         ///leer de Blackboard lo necesario para recueprar la configuracion de juego
         startMatch(PlayerType.HUMAN, PlayerType.CPU);
+
+
+
+        //DataTable tiempos = new DataTable("Tiempos", SerializationMode.XML, true);
+        //for (int i = 0; i <= StorageMgr.Blackboard.Get<int>("MaxDepth"); ++i)
+        //{
+        //    tiempos[i] = new DataTable("because yes", SerializationMode.NONE, false);
+        //}
+
+        //registerOnEndMatchListener(End);
     }
+
+    //private void End(Turn t)
+    //{
+    //    DataTable tiempos = StorageMgr.Blackboard.Get<DataTable>("Tiempos");
+
+    //    DataTable tiempos2 = new DataTable("Tiempos_AUX2", SerializationMode.XML, false);
+
+    //    for (int i = 0; i <= StorageMgr.Blackboard.Get<int>("MaxDepth"); ++i)
+    //    {
+    //        float media = 0.0f;
+    //        DataTable table = (DataTable) tiempos[i];
+    //        foreach (string key in table)
+    //        {
+    //            media += (float)table[key];
+    //        }
+    //        media /= table.Count;
+    //        tiempos2[i] = media;
+    //    }
+    //}
 
     #endregion
 

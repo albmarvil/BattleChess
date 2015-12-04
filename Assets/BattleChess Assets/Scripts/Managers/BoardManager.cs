@@ -225,9 +225,10 @@ public class BoardManager : MonoBehaviour {
     /// Method used to update the current status with the given movement
     /// </summary>
     /// <param name="movement">Movement data to update</param>
-    public void UpdateCurrentStatus(Movement movement)
+    public void UpdateCurrentStatus(BoardStatus movement)
     {
-        CurrentStatus.movePieceToDestination(movement.Origin, movement.Destination);
+        //CurrentStatus.movePieceToDestination(movement.Origin, movement.Destination);
+        CurrentStatus = movement;
     }
 
 
